@@ -1,11 +1,14 @@
 module Hydra
   class Color
     COLORS = {
-      "white" => 7,
-      "black" => 0,
-      "red"   => 1,
-      "green" => 2,
-      "blue"  => 4,
+      "black"  => 0,
+      "red"    => 1,
+      "green"  => 2,
+      "yellow" => 3,
+      "blue"   => 4,
+      "pink"   => 5,
+      "cyan"   => 6,
+      "white"  => 7,
     }
 
     getter :index
