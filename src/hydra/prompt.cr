@@ -47,6 +47,11 @@ module Hydra
     end
 
     def on_register(event_hub : Hydra::EventHub)
+      # Special handling for full stops
+      event_hub.bind(id, "keypress..") do |eh|
+        eh.trigger id, "append", {:char => "."}
+        false
+      end
       event_hub.bind(id, "keypress.*") do |eh, event|
         keypress = event.keypress
         if keypress
