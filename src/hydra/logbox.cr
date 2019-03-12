@@ -22,6 +22,10 @@ module Hydra
     def add_message(message)
       @messages << ExtendedString.new(message)
     end
+  
+    def clear
+      @messages = [] of Hydra::ExtendedString
+    end
 
     def scroll(value : Int32)
       @scroll_index += value
