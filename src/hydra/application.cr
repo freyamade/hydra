@@ -57,7 +57,8 @@ module Hydra
       @event_hub.broadcast(Event.new("ready"), @state, @elements)
       update_screen
       while @running
-        sleep 0.01
+        # Yield to other Fibers if any
+        Fiber.yield
         handle_keypress @screen.getch
       end
     end
