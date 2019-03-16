@@ -2,11 +2,14 @@ require "./element"
 
 module Hydra
   class Prompt < Element
-    def content() Hydra::ExtendedString
+    @cursor_position : Int32 = 0
+
+    def content : Hydra::ExtendedString
       ExtendedString.new(box_content(@value))
     end
 
     private def box_content(content)
+      content = content.insert @cursor_position, '|'
       if content.size > (width - 2)
         content = "…" + content[-(width - 3)..-1]
       end
@@ -19,11 +22,14 @@ module Hydra
 
     def append(string : String)
       @value += string
+      @cursor_position += 1
     end
 
     def remove_last
-      return if @value.size == 0
-      @value = @value[0..-2]
+      # Remove character to left of cursor
+      return if @cursor_position == 0
+      remove_character_at! @cursor_position - 1
+      @cursor_position -= 1
     end
 
     def value
@@ -32,14 +38,37 @@ module Hydra
 
     def clear
       @value = ""
+      @cursor_position = 0
+    end
+
+    def delete
+      return if @cursor_position == @value.size
+      # Delete the character to the right of the cursor
+      remove_character_at! @cursor_position
+    end
+
+    def remove_character_at!(position : Int32)
+      # Remove the character at the given position from the current value
+      logger = Logger.new File.new "debug.log", "a"
+      logger.info "Removing character at #{position} from #{@value}"
+      builder = String::Builder.new
+      @value.each_char.with_index do |c, i|
+        if i != position
+          builder << c
+        end
+      end
+      @value = builder.to_s
     end
 
     def trigger(behavior : String, payload = Hash(Symbol, String).new)
-      if behavior == "append"
+      case behavior
+      when "append"
         append(payload[:char])
-      elsif behavior == "remove_last"
+      when "remove_last"
         remove_last
-      elsif behavior == "clear"
+      when "delete"
+        delete
+      when "clear"
         clear
       else
         super
@@ -52,20 +81,34 @@ module Hydra
         eh.trigger id, "append", {:char => "."}
         false
       end
+      # Arrow keys to move cursor left and right
+      # Left
+      event_hub.bind(id, "keypress.left") do |eh|
+        @cursor_position -= 1 unless @cursor_position == 0
+        false
+      end
+      # Right
+      event_hub.bind(id, "keypress.right") do |eh|
+        @cursor_position += 1 unless @cursor_position == @value.size
+        false
+      end
       event_hub.bind(id, "keypress.*") do |eh, event|
         keypress = event.keypress
         if keypress
           if keypress.char != ""
-            eh.trigger(id, "append", { :char => keypress.char })
-            false
+            eh.trigger id, "append", {:char => keypress.char}
+            next false
           elsif keypress.name == "backspace"
-            eh.trigger(id, "remove_last")
-            false
+            eh.trigger id, "remove_last"
+            next false
+          elsif keypress.name == "delete"
+            eh.trigger id, "delete"
+            next false
           else
-            true
+            next true
           end
         else
-          true
+          next true
         end
       end
     end
