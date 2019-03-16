@@ -49,8 +49,6 @@ module Hydra
 
     def remove_character_at!(position : Int32)
       # Remove the character at the given position from the current value
-      logger = Logger.new File.new "debug.log", "a"
-      logger.info "Removing character at #{position} from #{@value}"
       builder = String::Builder.new
       @value.each_char.with_index do |c, i|
         if i != position
