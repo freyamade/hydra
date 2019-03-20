@@ -8,6 +8,7 @@ module Hydra
   class View
     property :filters
     getter :height, :width, :grid
+
     def initialize(height : Int32, width : Int32)
       @height = height
       @width = width
@@ -28,7 +29,7 @@ module Hydra
 
     def render(elements : Array(Element), state = Hash(String, String).new)
       clear
-      elements.sort {|a, b| a.z_index <=> b.z_index }.each do |el|
+      elements.each do |el|
         if el.template != ""
           el.value = el.template
           state.each do |key, value|
@@ -50,8 +51,12 @@ module Hydra
       if element.position == "center"
         x = (@height.to_f / 2 - element.height.to_f / 2).floor.to_i
         y = (@width.to_f / 2 - element.width.to_f / 2).floor.to_i
+        # Set back the position to the calculated position
+        element.position = "#{x}:#{y}"
       elsif element.position == "bottom-left"
         x = @height - element.height
+        # Set back the position to the calculated position
+        element.position = "#{x}:#{y}"
       else
         x, y = element.position.split(":").map(&.to_i)
       end
