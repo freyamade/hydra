@@ -13,12 +13,11 @@ module Hydra
 
     # Creates a new application with injected dependencies and sensible defaults
     def self.setup(event_hub : EventHub | Nil = nil,
-                   view : View | Nil  = nil,
+                   view : View | Nil = nil,
                    logger : Logger | Nil = nil,
                    screen : Screen | Nil = nil,
                    elements : ElementCollection | Nil = nil,
                    state : State | Nil = nil) : Hydra::Application
-
       event_hub = Hydra::EventHub.new unless event_hub
 
       unless logger
@@ -43,7 +42,7 @@ module Hydra
       instance
     end
 
-    private def initialize(view : Hydra::View, event_hub : Hydra::EventHub, logger : Logger, screen  : Screen, elements : ElementCollection, state : State)
+    private def initialize(view : Hydra::View, event_hub : Hydra::EventHub, logger : Logger, screen : Screen, elements : ElementCollection, state : State)
       @screen = screen
       @view = view
       @logger = logger
@@ -53,6 +52,8 @@ module Hydra
     end
 
     def run
+      # Sort the elements by their z_index here once, instead of every time we render
+      @elements.to_a.sort! { |a, b| a.z_index <=> b.z_index }
       @running = true
       @event_hub.broadcast(Event.new("ready"), @state, @elements)
       update_screen
@@ -64,15 +65,10 @@ module Hydra
     end
 
     private def handle_keypress(keypress : Keypress | Nil)
-      if keypress.nil?
-        # Even if no button is pressed, we should still update the screen
-        update_screen
-        return
-      else
-        event = Event.new(keypress)
-        @event_hub.broadcast(event, @state, @elements)
-        update_screen
-      end
+      return if keypress.nil?
+      event = Event.new(keypress)
+      @event_hub.broadcast(event, @state, @elements)
+      update_screen
     end
 
     def teardown
@@ -96,11 +92,11 @@ module Hydra
       @event_hub.bind(event, target, behavior)
     end
 
-    def bind(focus : String, event : String,  &block : EventHub, Event, ElementCollection, State -> Bool)
+    def bind(focus : String, event : String, &block : EventHub, Event, ElementCollection, State -> Bool)
       @event_hub.bind(focus, event, &block)
     end
 
-    def bind(event : String,  &block : EventHub, Event, ElementCollection, State -> Bool)
+    def bind(event : String, &block : EventHub, Event, ElementCollection, State -> Bool)
       @event_hub.bind(event, &block)
     end
 
@@ -115,8 +111,12 @@ module Hydra
     end
 
     def trigger(behavior : String, payload = Hash(Symbol, String))
-      if behavior == "stop"
+      case behavior
+      when "stop"
         stop
+      when "update"
+        # Allow for updates from other parts of the system
+        update_screen
       end
     end
 
