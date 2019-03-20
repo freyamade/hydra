@@ -3,6 +3,7 @@ require "./color_constants"
 module Hydra
   class Color
     getter :index
+    getter :name
 
     # Never do the same calculation twice
     CALCULATED_HASH = {} of UInt32 => String
