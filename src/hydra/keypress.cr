@@ -6,6 +6,7 @@ module Hydra
           5 => "ctrl-e",
          11 => "ctrl-k",
          13 => "enter",
+         14 => "ctrl-n",
          19 => "ctrl-s",
          23 => "ctrl-w",
          24 => "ctrl-x",
