@@ -11,10 +11,12 @@ module Hydra
          24 => "ctrl-x",
          27 => "escape",
         127 => "backspace",
-        338 => "keypress.page_down",
-        339 => "keypress.page_up",
-      65515 => "left",
+        338 => "page_down",
+        339 => "page_up",
       65514 => "right",
+      65515 => "left",
+      65516 => "down",
+      65517 => "up",
       65522 => "delete",
     }
 
