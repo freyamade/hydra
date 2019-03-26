@@ -21,7 +21,8 @@ module Hydra
     end
 
     def append(string : String)
-      @value += string
+      # Add a character to the left of the cursor and move the cursor on one character
+      @value = "#{@value[0...@cursor_position]}#{string}#{@value[@cursor_position...@value.size]}"
       @cursor_position += 1
     end
 
