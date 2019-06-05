@@ -13,7 +13,7 @@ module Hydra
       @register = {} of String => Application | Element
       @bindings = {} of String => Array(Binding)
 
-      @logger = Logger.new(File.open("./event_debug.log", "w"))
+      @logger = Logger.new(nil) # (File.open("./event_debug.log", "w"))
       @logger.level = Logger::DEBUG
 
       @focus = "application"
